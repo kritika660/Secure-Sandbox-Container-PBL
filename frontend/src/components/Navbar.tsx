@@ -32,7 +32,7 @@ export default function Navbar() {
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="flex items-center gap-2 text-brand-blue font-bold text-xl tracking-tight">
                 <Terminal className="h-6 w-6" />
-                <span>CloudSandbox</span>
+                <span>SSEM</span>
               </Link>
             </div>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
@@ -50,7 +50,7 @@ export default function Navbar() {
               </Link>
             </div>
           </div>
-          
+
           {/* Action Buttons */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
             <button
@@ -60,7 +60,7 @@ export default function Navbar() {
             >
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
-            
+
             {hasToken ? (
               <Link to="/profile" className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Dashboard
