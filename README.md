@@ -539,7 +539,18 @@ Contributions are welcome! Here's how you can help:
 <td align="center">
   <strong>Rahil Bhoot</strong><br/>
   <a href="https://github.com/Rahilbhoot">@Rahilbhoot</a><br/>
-  <sub>Lead Developer</sub>
+</td>
+<td align="center">
+  <strong>Komal Kumar</strong><br/>
+  <a href="https://github.com/komal-k25">@komal-k25</a><br/>
+</td>
+<td align="center">
+  <strong>Kritika Agrawal</strong><br/>
+  <a href="https://github.com/kritika660">@kritika660</a><br/>
+</td>
+<td align="center">
+  <strong>Manan Katarmal</strong><br/>
+  <a href="https://github.com/manoskie">@manoskie</a><br/>
 </td>
 </tr>
 </table>
