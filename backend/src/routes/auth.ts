@@ -31,12 +31,12 @@ router.post('/register', async (req, res) => {
 
     } catch (error: any) {
         console.error('Registration error:', error);
-        
+
         // MySQL throws 'ER_DUP_ENTRY' if someone tries to use an email/username that already exists
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: 'Username or email already exists.' });
         }
-        
+
         res.status(500).json({ error: 'Internal server error.' });
     }
 });
@@ -75,8 +75,8 @@ router.post('/login', async (req, res) => {
         // 5. Success! Generate their JWT VIP wristband
         // Make sure to set a secret key in your .env file later
         const token = jwt.sign(
-            { id: user.id, username: user.username }, 
-            process.env.JWT_SECRET || 'fallback_super_secret_key', 
+            { id: user.id, username: user.username },
+            process.env.JWT_SECRET || 'fallback_super_secret_key',
             { expiresIn: '1h' } // Token expires in 1 hour for security
         );
 

@@ -170,13 +170,13 @@ export default function Security() {
               <p className="text-lg text-white/80 max-w-xl mx-auto mb-8">
                 Every layer of SSEM is built with security in mind. Start building in a protected environment today.
               </p>
-              <Link
+              {/* <Link
                 to="/register"
                 className="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-base font-semibold text-purple-600 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300"
               >
                 Get Started Securely
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
