@@ -280,7 +280,7 @@ cd backend
 npm install
 npm run dev
 ```
-> 🟢 Server starts at `http://localhost:5000`
+> 🟢 Server starts at `http://13.60.170.3:5000`
 
 **Terminal 2 — Frontend:**
 ```bash

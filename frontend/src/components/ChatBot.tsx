@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import './ChatBot.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://13.60.170.3:5000/api';
 
 interface Message {
   id: string;
@@ -26,7 +26,7 @@ const ChatBot: React.FC = () => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const [cooldown, setCooldown] = useState(0); 
+  const [cooldown, setCooldown] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -84,7 +84,7 @@ const ChatBot: React.FC = () => {
     } catch (error: any) {
       console.error('Chat error:', error);
       let errorText = "I'm sorry, I'm having trouble connecting to my brain right now. Please make sure the Gemini API key is configured correctly in the backend.";
-      
+
       if (error.response?.status === 401 || error.response?.status === 403) {
         errorText = "Please log in to your SSEM account to use the Assistant.";
       } else if (error.response?.status === 429) {
@@ -132,8 +132,8 @@ const ChatBot: React.FC = () => {
           <div className="chatbot-messages">
             {messages.map((m) => (
               <div key={m.id} className={`message ${m.sender}`}>
-                {m.sender === 'ai' && <div className="mb-1 font-bold text-xs opacity-50 flex items-center gap-1"><Bot size={12}/> AI Assistant</div>}
-                {m.sender === 'user' && <div className="mb-1 font-bold text-xs opacity-50 flex items-center gap-1 justify-end">You <User size={12}/></div>}
+                {m.sender === 'ai' && <div className="mb-1 font-bold text-xs opacity-50 flex items-center gap-1"><Bot size={12} /> AI Assistant</div>}
+                {m.sender === 'user' && <div className="mb-1 font-bold text-xs opacity-50 flex items-center gap-1 justify-end">You <User size={12} /></div>}
                 <div className="markdown-content">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {m.text}

@@ -13,10 +13,12 @@ CREATE TABLE virtual_machines (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
+    os_type ENUM('ubuntu', 'kali') DEFAULT 'ubuntu',
     status ENUM('running', 'stopped') DEFAULT 'stopped',
     vnc_port INT,
     novnc_port INT,
     container_id VARCHAR(255),
+    vnc_link VARCHAR(512),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

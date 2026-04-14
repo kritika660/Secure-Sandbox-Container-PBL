@@ -7,11 +7,39 @@ import yaml from "js-yaml";
 const execAsync = util.promisify(exec);
 const COMPOSE_FILES_DIR = path.resolve(__dirname, "../../vm-compose-files");
 
-// Change: Ensure we use vmCount to create unique offsets
-export async function createDockerContainer(userId: number, vmName: string, vmCount: number) {
+// OS-specific Docker image configurations
+const OS_CONFIGS: Record<string, {
+    image: string;
+    environment: string[];
+    vncPort: number; // The internal port exposed by the image for web VNC
+}> = {
+    ubuntu: {
+        image: "accetto/ubuntu-vnc-xfce-g3",
+        environment: [
+            "VNC_PW=password",
+            "STARTUP_WAIT=5"
+        ],
+        vncPort: 6901
+    },
+    kali: {
+        image: "kasmweb/kali-rolling-desktop:1.15.0",
+        environment: [
+            "VNC_PW=password",
+            "KASM_PORT=6901"
+        ],
+        vncPort: 6901
+    }
+};
+
+export async function createDockerContainer(
+    userId: number,
+    vmName: string,
+    vmCount: number,
+    osType: 'ubuntu' | 'kali' = 'ubuntu'
+) {
+    const config = OS_CONFIGS[osType] || OS_CONFIGS.ubuntu;
 
     // 1. Create a truly unique port and name
-    // If User 3 has 0 VMs, port is 6280. If they have 1 VM, port is 6281.
     const portOffset = userId + vmCount;
     const novncPort = 6280 + portOffset;
 
@@ -19,24 +47,22 @@ export async function createDockerContainer(userId: number, vmName: string, vmCo
     const containerName = `ssem-vm-u${userId}-n${vmCount}`;
     const projectName = `vm_u${userId}_n${vmCount}`;
 
-    // 2. Updated Blueprint
+    // 2. Build the compose config based on OS type
+    const serviceConfig: any = {
+        image: config.image,
+        container_name: containerName,
+        ports: [
+            `0.0.0.0:${novncPort}:${config.vncPort}`
+        ],
+        environment: config.environment,
+        privileged: true,
+        shm_size: '1gb'
+    };
+
     const composeConfig = {
         version: "3.8",
         services: {
-            sandbox_vm: {
-                image: "accetto/ubuntu-vnc-xfce-g3",
-                container_name: containerName,
-                ports: [
-                    // Mapping to the calculated unique port
-                    `0.0.0.0:${novncPort}:6901`
-                ],
-                environment: [
-                    "VNC_PW=password",
-                    "STARTUP_WAIT=5"
-                ],
-                privileged: true,
-                shm_size: '1gb'
-            },
+            sandbox_vm: serviceConfig,
         },
     };
 
@@ -50,8 +76,12 @@ export async function createDockerContainer(userId: number, vmName: string, vmCo
     // 4. Start Docker
     await execAsync(`docker-compose -f "${filePath}" -p "${projectName}" up -d`);
 
-    // The link now uses the correctly mapped port
-    const realLink = `http://localhost:${novncPort}/vnc.html?autoconnect=true`;
+    // The link format differs per image:
+    // - Ubuntu (accetto): HTTP on /vnc.html
+    // - Kali (kasmweb):   HTTPS on root /
+    const realLink = osType === 'kali'
+        ? `https://13.60.170.3:${novncPort}/`
+        : `http://13.60.170.3:${novncPort}/vnc.html?autoconnect=true`;
 
     return {
         port: novncPort,

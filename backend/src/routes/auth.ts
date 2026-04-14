@@ -21,13 +21,23 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
         // 4. Save the user to the database
-        const [result] = await pool.execute(
+        const [result]: any = await pool.execute(
             'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
             [username, email, hashedPassword]
         );
 
-        // 5. Tell the frontend that the user is registered
-        res.status(201).json({ message: 'User registered successfully!' });
+        // 5. Generate a JWT token so the user is logged in immediately after registering
+        const token = jwt.sign(
+            { id: result.insertId, username: username },
+            process.env.JWT_SECRET || 'fallback_super_secret_key',
+            { expiresIn: '1h' }
+        );
+
+        // 6. Send back both the success message and the token
+        res.status(201).json({
+            message: 'User registered successfully!',
+            token: token
+        });
 
     } catch (error: any) {
         console.error('Registration error:', error);

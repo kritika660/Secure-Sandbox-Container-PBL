@@ -63,6 +63,13 @@ export default function VMCard({ vm, actionLoading, onStart, onStop, onDelete, i
           <div>
             <h3 className="text-[15px] font-semibold text-gray-900 dark:text-white leading-tight">{vm.name}</h3>
             <div className="flex items-center gap-2 mt-1">
+              <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide ${
+                vm.os_type === 'kali'
+                  ? 'bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300'
+                  : 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300'
+              }`}>
+                {vm.os_type === 'kali' ? 'Kali' : 'Ubuntu'}
+              </span>
               <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-700/70 px-2 py-0.5 text-[11px] font-mono font-medium text-gray-600 dark:text-gray-300">
                 :{vm.port}
               </span>
@@ -86,9 +93,25 @@ export default function VMCard({ vm, actionLoading, onStart, onStop, onDelete, i
       </div>
 
       {/* Meta */}
-      <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-5">
+      <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 mb-4">
         <Clock className="h-3 w-3" />
         <span>Created {timeAgo(vm.created_at)}</span>
+      </div>
+
+      {/* Credentials */}
+      <div className="mb-5 rounded-lg bg-gray-50 dark:bg-slate-700/40 border border-gray-100 dark:border-slate-600/50 px-3 py-2.5">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">Desktop Credentials</p>
+        {vm.os_type === 'kali' ? (
+          <div className="flex items-center gap-3 text-xs">
+            <span className="text-gray-500 dark:text-gray-400">User: <span className="font-mono font-semibold text-gray-700 dark:text-gray-200">kasm_user</span></span>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-gray-500 dark:text-gray-400">Pass: <span className="font-mono font-semibold text-gray-700 dark:text-gray-200">password</span></span>
+          </div>
+        ) : (
+          <div className="text-xs">
+            <span className="text-gray-500 dark:text-gray-400">Password: <span className="font-mono font-semibold text-gray-700 dark:text-gray-200">password123</span></span>
+          </div>
+        )}
       </div>
 
       {/* Actions */}
