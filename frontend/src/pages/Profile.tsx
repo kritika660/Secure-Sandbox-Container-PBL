@@ -43,8 +43,8 @@ export default function Profile() {
 
   if (!token) return null;
 
-  const handleCreateVM = async (name: string) => {
-    await createVM(name);
+  const handleCreateVM = async (name: string, osType: 'ubuntu' | 'kali') => {
+    await createVM(name, osType);
     setIsModalOpen(false);
   };
 

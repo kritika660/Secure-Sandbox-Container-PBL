@@ -29,11 +29,15 @@ router.get('/vms', authenticateToken, async (req: any, res: any) => {
 router.post('/vms', authenticateToken, async (req: any, res: any) => {
     try {
         const userID = req.user.id;
-        const { name } = req.body;
+        const { name, osType } = req.body;
 
         if (!name) {
             return res.status(400).json({ error: 'VM name is required.' });
         }
+
+        // Validate osType (default to 'ubuntu' if not provided)
+        const validOsTypes = ['ubuntu', 'kali'];
+        const selectedOs = validOsTypes.includes(osType) ? osType : 'ubuntu';
 
         // Check limit (Max 3)
         const [vms]: any = await pool.execute(
@@ -56,20 +60,20 @@ router.post('/vms', authenticateToken, async (req: any, res: any) => {
             availableIndex++;
         }
 
-        // 1. TRIGGER THE DOCKER MAGIC
-        const dockerVM = await createDockerContainer(userID, name, availableIndex);
+        // 1. TRIGGER THE DOCKER MAGIC (now with OS type!)
+        const dockerVM = await createDockerContainer(userID, name, availableIndex, selectedOs);
 
         // 2. ALIGN WITH YOUR DATABASE SCHEMA
-        // Note: Column names must match: user_id, name, status, vnc_port, container_id, vnc_link
         const [result]: any = await pool.execute(
-            'INSERT INTO virtual_machines (user_id, name, status, vnc_port, container_id, vnc_link) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO virtual_machines (user_id, name, os_type, status, vnc_port, container_id, vnc_link) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [
                 userID,
                 name,
+                selectedOs,
                 'running',
                 dockerVM.port,
                 dockerVM.containerName,
-                dockerVM.link // Make sure dockerService returns 'link'
+                dockerVM.link
             ]
         );
 
@@ -77,6 +81,7 @@ router.post('/vms', authenticateToken, async (req: any, res: any) => {
             message: 'VM created and started successfully!',
             id: result.insertId,
             container_id: dockerVM.containerName,
+            os_type: selectedOs,
             link: dockerVM.link
         });
 

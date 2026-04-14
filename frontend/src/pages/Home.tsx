@@ -160,7 +160,7 @@ export default function Home() {
 
               {/* Headline */}
               <h1 className="animate-fade-in-up stagger-1 text-4xl font-extrabold tracking-tight text-brand-dark dark:text-white sm:text-6xl lg:text-7xl leading-[1.1]">
-                Deploy secure
+                Secure
                 <span className="gradient-text"> containers </span>
                 in seconds
               </h1>

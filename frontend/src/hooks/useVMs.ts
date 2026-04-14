@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://13.60.170.3:5000/api';
 
 export interface VM {
   id: number;
   name: string;
+  os_type: 'ubuntu' | 'kali';
   status: 'running' | 'stopped';
   port: number;
   vnc_link: string;
@@ -18,7 +19,7 @@ interface UseVMsReturn {
   error: string | null;
   canCreate: boolean;
   fetchVMs: () => Promise<void>;
-  createVM: (name: string) => Promise<void>;
+  createVM: (name: string, osType?: 'ubuntu' | 'kali') => Promise<void>;
   startVM: (id: number) => Promise<void>;
   stopVM: (id: number) => Promise<void>;
   deleteVM: (id: number) => Promise<void>;
@@ -77,6 +78,7 @@ export function useVMs(): UseVMsReturn {
       const mapped: VM[] = vmsData.map((vm: any) => ({
         id: vm.id,
         name: vm.name,
+        os_type: vm.os_type || 'ubuntu',
         status: vm.status,
         port: vm.vnc_port,
         vnc_link: vm.vnc_link,
@@ -91,7 +93,7 @@ export function useVMs(): UseVMsReturn {
   }, []);
 
   // ── 2. Create VM ──
-  const createVM = useCallback(async (name: string) => {
+  const createVM = useCallback(async (name: string, osType: 'ubuntu' | 'kali' = 'ubuntu') => {
     if (vms.length >= 3) {
       setError('Maximum limit of 3 VMs reached.');
       return;
@@ -102,7 +104,7 @@ export function useVMs(): UseVMsReturn {
       const res = await fetch(`${API_BASE}/vms`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, osType }),
       });
 
       const data = await handleResponse(res);

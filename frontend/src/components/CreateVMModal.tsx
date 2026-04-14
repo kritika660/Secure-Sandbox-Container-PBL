@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, Loader2, Server } from 'lucide-react';
+import { X, Plus, Loader2, Server, Info } from 'lucide-react';
 
 interface CreateVMModalProps {
   isOpen: boolean;
@@ -7,11 +7,65 @@ interface CreateVMModalProps {
   canCreate: boolean;
   currentCount: number;
   onClose: () => void;
-  onCreate: (name: string) => void;
+  onCreate: (name: string, osType: 'ubuntu' | 'kali') => void;
 }
+
+// Inline SVG icons for OS logos (small, clean, no external dependencies)
+function UbuntuIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 256 256" className={className} fill="currentColor">
+      <circle cx="128" cy="128" r="128" fill="#E95420" />
+      <circle cx="128" cy="128" r="45" fill="none" stroke="white" strokeWidth="14" />
+      <circle cx="128" cy="62" r="18" fill="white" />
+      <circle cx="71" cy="161" r="18" fill="white" />
+      <circle cx="185" cy="161" r="18" fill="white" />
+      <line x1="128" y1="80" x2="128" y2="83" stroke="white" strokeWidth="10" strokeLinecap="round" />
+      <line x1="89" y1="150" x2="86" y2="147" stroke="white" strokeWidth="10" strokeLinecap="round" />
+      <line x1="167" y1="150" x2="170" y2="147" stroke="white" strokeWidth="10" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function KaliIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 256 256" className={className}>
+      <circle cx="128" cy="128" r="128" fill="#557C94" />
+      <g transform="translate(64, 55) scale(0.5)">
+        <path d="M128 0 L180 60 L256 80 L200 140 L210 220 L128 190 L46 220 L56 140 L0 80 L76 60 Z"
+              fill="white" opacity="0.95" />
+      </g>
+    </svg>
+  );
+}
+
+type OsType = 'ubuntu' | 'kali';
+
+const OS_OPTIONS: { id: OsType; name: string; description: string; icon: React.ReactNode; gradient: string; border: string; ring: string; shadow: string }[] = [
+  {
+    id: 'ubuntu',
+    name: 'Ubuntu',
+    description: 'Full XFCE desktop with browser & tools',
+    icon: <UbuntuIcon className="h-8 w-8" />,
+    gradient: 'from-orange-500 to-red-500',
+    border: 'border-orange-300 dark:border-orange-700 ring-2 ring-orange-400/40 dark:ring-orange-500/30',
+    ring: 'ring-orange-400/40',
+    shadow: 'shadow-orange-500/15',
+  },
+  {
+    id: 'kali',
+    name: 'Kali Linux',
+    description: 'Security-focused distro with pen-test tools',
+    icon: <KaliIcon className="h-8 w-8" />,
+    gradient: 'from-sky-600 to-slate-700',
+    border: 'border-sky-300 dark:border-sky-700 ring-2 ring-sky-400/40 dark:ring-sky-500/30',
+    ring: 'ring-sky-400/40',
+    shadow: 'shadow-sky-500/15',
+  },
+];
 
 export default function CreateVMModal({ isOpen, isLoading, canCreate, currentCount, onClose, onCreate }: CreateVMModalProps) {
   const [name, setName] = useState('');
+  const [selectedOs, setSelectedOs] = useState<OsType>('ubuntu');
   const [validationError, setValidationError] = useState('');
 
   if (!isOpen) return null;
@@ -38,13 +92,15 @@ export default function CreateVMModal({ isOpen, isLoading, canCreate, currentCou
     }
 
     setValidationError('');
-    onCreate(trimmed);
+    onCreate(trimmed, selectedOs);
     setName('');
+    setSelectedOs('ubuntu');
   };
 
   const handleClose = () => {
     if (!isLoading) {
       setName('');
+      setSelectedOs('ubuntu');
       setValidationError('');
       onClose();
     }
@@ -60,7 +116,7 @@ export default function CreateVMModal({ isOpen, isLoading, canCreate, currentCou
       />
 
       {/* Modal */}
-      <div className="animate-scale-in relative w-full max-w-md rounded-2xl bg-white/95 dark:bg-slate-800/95 glass shadow-2xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
+      <div className="animate-scale-in relative w-full max-w-lg rounded-2xl bg-white/95 dark:bg-slate-800/95 glass shadow-2xl border border-gray-200/50 dark:border-slate-700/50 overflow-hidden">
         {/* Gradient header bar */}
         <div className="h-1.5 bg-gradient-to-r from-brand-blue via-indigo-500 to-purple-500 animate-shimmer" />
 
@@ -72,7 +128,7 @@ export default function CreateVMModal({ isOpen, isLoading, canCreate, currentCou
             </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Create New VM</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Spin up a new sandbox environment</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Choose your OS and spin up a sandbox</p>
             </div>
           </div>
           <button
@@ -106,6 +162,82 @@ export default function CreateVMModal({ isOpen, isLoading, canCreate, currentCou
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4">
+          {/* OS Selection */}
+          <div className="mb-5">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              Operating System
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {OS_OPTIONS.map((os) => {
+                const isSelected = selectedOs === os.id;
+                return (
+                  <button
+                    key={os.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedOs(os.id);
+                      if (validationError) setValidationError('');
+                    }}
+                    disabled={isLoading}
+                    className={`relative flex flex-col items-center gap-2.5 rounded-xl p-4 border-2 transition-all duration-300 cursor-pointer
+                      ${isSelected
+                        ? `${os.border} bg-gradient-to-br ${os.gradient.replace('from-', 'from-').replace('to-', 'to-')}/5 dark:bg-opacity-10 shadow-lg ${os.shadow}`
+                        : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 hover:shadow-md'
+                      }
+                      disabled:opacity-50`}
+                  >
+                    {/* Selection indicator */}
+                    {isSelected && (
+                      <div className="absolute top-2 right-2">
+                        <div className={`h-5 w-5 rounded-full bg-gradient-to-br ${os.gradient} flex items-center justify-center shadow-md`}>
+                          <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* OS Icon */}
+                    <div className={`flex h-14 w-14 items-center justify-center rounded-xl transition-all duration-300 ${
+                      isSelected
+                        ? `bg-gradient-to-br ${os.gradient} shadow-lg ${os.shadow} scale-110`
+                        : 'bg-gray-100 dark:bg-slate-700'
+                    }`}>
+                      <div className={`${isSelected ? 'text-white' : 'text-gray-500 dark:text-gray-400'} transition-colors duration-300`}>
+                        {os.icon}
+                      </div>
+                    </div>
+
+                    {/* OS Name & Description */}
+                    <div className="text-center">
+                      <p className={`text-sm font-bold transition-colors duration-300 ${
+                        isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {os.name}
+                      </p>
+                      <p className={`text-[11px] leading-tight mt-1 transition-colors duration-300 ${
+                        isSelected ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'
+                      }`}>
+                        {os.description}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Kali info note */}
+          {selectedOs === 'kali' && (
+            <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-sky-50 dark:bg-sky-900/20 border border-sky-200/60 dark:border-sky-800/40 p-3 animate-slide-down">
+              <Info className="h-4 w-4 text-sky-500 dark:text-sky-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-sky-700 dark:text-sky-300 leading-relaxed">
+                Kali Linux comes with pre-installed penetration testing tools. First-time setup may take a bit longer as the image downloads.
+              </p>
+            </div>
+          )}
+
+          {/* VM Name Input */}
           <div className="mb-5">
             <label htmlFor="vm-name" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               VM Name
